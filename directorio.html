@@ -1,0 +1,986 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Directorio de Directores y Monitores</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#20242B;
+    --muted:#767C87;
+    --faint:#A7ABB3;
+    --line:#E7E6E2;
+    --paper:#FBFAF8;
+    --white:#FFFFFF;
+    --accent:#2E5AAC;
+    --accent-soft:#EEF2F9;
+    --danger:#B3261E;
+    --danger-soft:#FBEAE8;
+    --warn:#8A6215;
+    --warn-soft:#FBF1DE;
+    --ok:#2E7D4F;
+    --ok-soft:#E9F5EE;
+    --radius:8px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Inter',system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:var(--accent);}
+  button{font-family:inherit;}
+  :focus-visible{outline:2.5px solid var(--accent); outline-offset:2px;}
+  .wrap{max-width:1040px;margin:0 auto;padding:0 20px 60px;}
+
+  /* HEADER */
+  header.top{
+    border-bottom:1px solid var(--line);
+    padding:26px 20px 0;
+  }
+  .top-inner{max-width:1040px;margin:0 auto;}
+  .top-title-row{display:flex; justify-content:space-between; align-items:flex-start; gap:16px; flex-wrap:wrap;}
+  .eyebrow{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    letter-spacing:.12em;
+    text-transform:uppercase;
+    color:var(--faint);
+    margin:0 0 8px;
+  }
+  h1{
+    font-family:'Fraunces',serif;
+    font-weight:600;
+    font-size:clamp(24px,3.6vw,32px);
+    margin:0 0 8px;
+    letter-spacing:-.01em;
+    color:var(--ink);
+  }
+  .sub{color:var(--muted);font-size:14px;margin:0 0 18px;max-width:600px;line-height:1.55;}
+
+  .btn-primary{
+    background:var(--ink); color:#fff; border:none;
+    font-weight:600; font-size:13.5px;
+    padding:10px 16px; border-radius:8px; cursor:pointer;
+    white-space:nowrap;
+    display:inline-flex; align-items:center; gap:6px;
+  }
+  .btn-primary:hover{background:#000;}
+  .btn-secondary{
+    background:var(--white); color:var(--ink); border:1px solid var(--line);
+    font-weight:600; font-size:13px;
+    padding:8px 14px; border-radius:8px; cursor:pointer;
+  }
+  .btn-secondary:hover{border-color:var(--faint);}
+  .btn-danger-text{
+    background:none; border:none; color:var(--danger);
+    font-size:12.5px; font-weight:600; cursor:pointer; padding:6px 4px;
+  }
+
+  /* STATS STRIP */
+  .stats-scroll{
+    display:flex; gap:8px;
+    overflow-x:auto;
+    padding:2px 0 18px;
+    scrollbar-width:thin;
+  }
+  .chip{
+    flex:0 0 auto;
+    background:var(--white);
+    border:1px solid var(--line);
+    border-radius:8px;
+    padding:8px 12px;
+    cursor:pointer;
+    transition:border-color .15s, background .15s;
+    min-width:118px;
+  }
+  .chip:hover{border-color:var(--faint);}
+  .chip.active{
+    background:var(--ink);
+    border-color:var(--ink);
+  }
+  .chip.active .chip-name, .chip.active .chip-nums, .chip.active .chip-nums b{color:#fff;}
+  .chip-name{
+    font-size:11.5px; font-weight:600;
+    letter-spacing:.02em;
+    color:var(--ink);
+    white-space:nowrap;
+    margin-bottom:3px;
+  }
+  .chip-nums{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);}
+  .chip-nums b{color:var(--ink);font-weight:600;}
+
+  /* SEARCH */
+  .searchbar{
+    position:sticky; top:0; z-index:20;
+    background:var(--paper);
+    padding:16px 0 12px;
+    border-bottom:1px solid var(--line);
+  }
+
+  .scope-toggle{
+    display:flex; gap:4px;
+    background:var(--white);
+    border:1px solid var(--line);
+    border-radius:8px;
+    padding:3px;
+    margin-bottom:10px;
+    width:fit-content;
+  }
+  .scope-btn{
+    border:none; background:transparent;
+    font-family:'Inter',sans-serif;
+    font-size:13px; font-weight:500;
+    color:var(--muted);
+    padding:7px 14px;
+    border-radius:6px;
+    cursor:pointer;
+    transition:background .15s, color .15s;
+  }
+  .scope-btn:hover{color:var(--ink);}
+  .scope-btn.active{background:var(--ink); color:#fff; font-weight:600;}
+
+  .search-row{display:flex; gap:10px; align-items:center;}
+  .search-input-wrap{
+    flex:1;
+    display:flex; align-items:center; gap:8px;
+    background:var(--white);
+    border:1.5px solid var(--line);
+    border-radius:var(--radius);
+    padding:10px 14px;
+    transition:border-color .15s, box-shadow .15s;
+  }
+  .search-input-wrap:focus-within{
+    border-color:var(--accent);
+    box-shadow:0 0 0 3px var(--accent-soft);
+  }
+  .search-input-wrap svg{flex:0 0 auto;color:var(--muted);}
+  #search{
+    border:none; outline:none; flex:1;
+    font-family:'Inter',sans-serif;
+    font-size:15px;
+    background:transparent;
+    color:var(--ink);
+  }
+  #search::placeholder{color:var(--faint);}
+  #clearBtn{
+    display:none;
+    border:none;background:none;cursor:pointer;
+    color:var(--muted);
+    font-size:18px; line-height:1;
+    padding:2px 4px;
+    border-radius:4px;
+  }
+  select#deptFilter{
+    border:1.5px solid var(--line);
+    background:var(--white);
+    border-radius:var(--radius);
+    padding:10px;
+    font-family:'Inter',sans-serif;
+    font-size:13.5px;
+    color:var(--ink);
+    max-width:168px;
+  }
+  .meta-row{
+    display:flex; justify-content:space-between; align-items:baseline;
+    margin-top:10px;
+    font-size:12px; color:var(--muted);
+    font-family:'IBM Plex Mono',monospace;
+  }
+  .meta-row b{color:var(--ink);}
+  .active-filter-pill{
+    display:none;
+    align-items:center; gap:6px;
+    background:var(--accent-soft);
+    color:var(--accent);
+    border-radius:20px;
+    padding:4px 10px 4px 12px;
+    font-family:'Inter',sans-serif;
+    font-size:12px;
+    font-weight:600;
+  }
+  .active-filter-pill button{
+    border:none;background:none;color:var(--accent);
+    cursor:pointer; font-size:14px; line-height:1;
+  }
+
+  /* RESULTS */
+  #results{margin-top:16px; display:flex; flex-direction:column; gap:10px;}
+  .card{
+    background:var(--white);
+    border:1px solid var(--line);
+    border-left:3px solid var(--line);
+    border-radius:var(--radius);
+    padding:16px 18px;
+  }
+  .card.cls-alerta{border-left-color:var(--danger);}
+  .card-top{
+    display:flex; justify-content:space-between; align-items:flex-start;
+    gap:10px; margin-bottom:12px;
+  }
+  .centro-name{
+    font-family:'Fraunces',serif;
+    font-weight:600;
+    font-size:16.5px;
+    line-height:1.3;
+    margin:0;
+    color:var(--ink);
+  }
+  .centro-loc{
+    font-size:12px; color:var(--muted); margin-top:3px;
+  }
+  .card-top-right{display:flex; flex-direction:column; align-items:flex-end; gap:6px;}
+  .badge{
+    flex:0 0 auto;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:10.5px;
+    letter-spacing:.03em;
+    padding:3px 8px;
+    border-radius:5px;
+    background:var(--paper);
+    border:1px solid var(--line);
+    color:var(--muted);
+    white-space:nowrap;
+  }
+  .badge-alert{background:var(--danger-soft);border-color:transparent;color:var(--danger);font-weight:600;}
+  .edit-btn{
+    border:1px solid var(--line); background:var(--white); color:var(--muted);
+    font-size:11.5px; font-weight:600; padding:4px 10px; border-radius:6px; cursor:pointer;
+  }
+  .edit-btn:hover{color:var(--ink); border-color:var(--faint);}
+
+  .people{
+    display:grid; grid-template-columns:1fr 1fr; gap:14px;
+  }
+  @media (max-width:600px){ .people{grid-template-columns:1fr;} }
+  .person-label{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:10.5px; letter-spacing:.08em; text-transform:uppercase;
+    color:var(--faint); margin-bottom:4px;
+    display:flex; align-items:center; gap:6px;
+  }
+  .status-pill{
+    font-family:'Inter',sans-serif;
+    text-transform:none;
+    letter-spacing:0;
+    font-size:10px; font-weight:600;
+    padding:2px 7px; border-radius:10px;
+  }
+  .pill-warn{background:var(--warn-soft);color:var(--warn);}
+  .pill-danger{background:var(--danger-soft);color:var(--danger);}
+  .tag-tel{
+    font-family:'Inter',sans-serif;
+    font-size:9.5px; color:var(--faint); margin-left:2px;
+  }
+  .contact-line-sub{margin-top:4px;}
+  .observacion{
+    margin-top:12px; padding-top:10px;
+    border-top:1px dashed var(--line);
+    font-size:12px; color:var(--warn);
+    font-style:italic;
+  }
+  .person-name{font-weight:600; font-size:14.5px; margin-bottom:4px; color:var(--ink);}
+  .person-name.empty{color:var(--faint); font-weight:400; font-style:italic;}
+  .contact-line{
+    display:flex; gap:10px; flex-wrap:wrap;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px; color:var(--muted);
+  }
+  .contact-line a{color:var(--accent); text-decoration:none;}
+  .contact-line a:hover{text-decoration:underline;}
+  .divider-v{border-left:1px solid var(--line); padding-left:14px;}
+  @media (max-width:600px){
+    .divider-v{border-left:none; border-top:1px solid var(--line); padding-left:0; padding-top:10px;}
+  }
+
+  .empty-state{
+    text-align:center; padding:60px 20px; color:var(--muted);
+  }
+  .empty-state svg{margin-bottom:14px; color:var(--line);}
+  .empty-state p{margin:0; font-size:14px;}
+
+  #loadMoreWrap{text-align:center; padding:18px 0 6px;}
+  #loadMoreBtn{
+    background:var(--ink); color:#fff; border:none;
+    font-family:'Inter',sans-serif; font-weight:600; font-size:13.5px;
+    padding:10px 20px; border-radius:8px; cursor:pointer;
+  }
+  #loadMoreBtn:hover{background:#000;}
+
+  footer{
+    text-align:center; padding:22px 0 4px;
+    font-size:11px; color:var(--faint);
+    font-family:'IBM Plex Mono',monospace;
+  }
+
+  /* LOADING / TOAST */
+  #loadingState, #errorState{
+    text-align:center; padding:80px 20px; color:var(--muted); font-size:14px;
+  }
+  #errorState{color:var(--danger); display:none;}
+  .spinner{
+    width:26px; height:26px; margin:0 auto 14px;
+    border:3px solid var(--line); border-top-color:var(--ink);
+    border-radius:50%; animation:spin .8s linear infinite;
+  }
+  @keyframes spin{to{transform:rotate(360deg);}}
+
+  .toast{
+    position:fixed; bottom:20px; left:50%; transform:translateX(-50%) translateY(20px);
+    background:var(--ink); color:#fff; padding:12px 20px; border-radius:8px;
+    font-size:13.5px; font-weight:500; box-shadow:0 8px 24px rgba(0,0,0,.2);
+    opacity:0; transition:opacity .25s, transform .25s; z-index:200; pointer-events:none;
+  }
+  .toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+  .toast.ok{background:var(--ok);}
+  .toast.error{background:var(--danger);}
+
+  /* MODAL */
+  .modal-overlay{
+    display:none; position:fixed; inset:0; background:rgba(20,22,26,.55);
+    z-index:100; align-items:flex-start; justify-content:center; padding:5vh 16px;
+    overflow-y:auto;
+  }
+  .modal-overlay.open{display:flex;}
+  .modal{
+    background:var(--white); border-radius:12px; width:100%; max-width:640px;
+    padding:0; max-height:90vh; display:flex; flex-direction:column;
+  }
+  .modal-header{
+    display:flex; justify-content:space-between; align-items:center;
+    padding:18px 22px; border-bottom:1px solid var(--line);
+  }
+  .modal-header h2{font-family:'Fraunces',serif; font-size:19px; margin:0; font-weight:600;}
+  .modal-close{border:none; background:none; font-size:22px; color:var(--muted); cursor:pointer; line-height:1;}
+  .modal-body{padding:20px 22px; overflow-y:auto;}
+  .modal-footer{
+    padding:16px 22px; border-top:1px solid var(--line);
+    display:flex; justify-content:space-between; align-items:center; gap:10px;
+  }
+  fieldset{border:none; padding:0; margin:0 0 20px;}
+  fieldset legend{
+    font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.1em;
+    text-transform:uppercase; color:var(--accent); font-weight:600; margin-bottom:10px; padding:0;
+  }
+  .field-grid{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
+  @media (max-width:560px){ .field-grid{grid-template-columns:1fr;} }
+  .field{display:flex; flex-direction:column; gap:4px;}
+  .field.span-2{grid-column:1 / -1;}
+  .field label{font-size:12px; font-weight:600; color:var(--muted);}
+  .field input, .field select, .field textarea{
+    border:1.5px solid var(--line); border-radius:6px; padding:8px 10px;
+    font-family:'Inter',sans-serif; font-size:13.5px; color:var(--ink); background:var(--white);
+  }
+  .field input:focus, .field select:focus, .field textarea:focus{
+    outline:none; border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-soft);
+  }
+  .field textarea{resize:vertical; min-height:50px;}
+  .form-error{
+    background:var(--danger-soft); color:var(--danger); font-size:12.5px;
+    padding:8px 12px; border-radius:6px; margin-bottom:14px; display:none;
+  }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="top-inner">
+    <div class="top-title-row">
+      <div>
+        <p class="eyebrow">Programa &middot; Cobertura escolar 2026</p>
+        <h1>Directorio de Directores y Monitores</h1>
+        <p class="sub">Conectado en vivo a Google Sheets. Buscá, editá o agregá un centro y queda guardado para todos.</p>
+      </div>
+      <button class="btn-primary" id="addBtn">+ Agregar centro</button>
+    </div>
+    <div class="stats-scroll" id="statsScroll"></div>
+  </div>
+</header>
+
+<div class="wrap">
+  <div id="loadingState">
+    <div class="spinner"></div>
+    Cargando datos desde Google Sheets…
+  </div>
+  <div id="errorState"></div>
+
+  <div id="appContent" style="display:none;">
+    <div class="searchbar">
+      <div class="scope-toggle" role="group" aria-label="Buscar en">
+        <button type="button" class="scope-btn active" data-scope="todos" aria-pressed="true">Todo</button>
+        <button type="button" class="scope-btn" data-scope="director" aria-pressed="false">Directores</button>
+        <button type="button" class="scope-btn" data-scope="monitor" aria-pressed="false">Monitores</button>
+      </div>
+      <div class="search-row">
+        <div class="search-input-wrap">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          <input id="search" type="text" placeholder="Nombre, centro escolar, código..." autocomplete="off" aria-label="Buscar">
+          <button id="clearBtn" aria-label="Limpiar búsqueda">&times;</button>
+        </div>
+        <select id="deptFilter" aria-label="Filtrar por departamento">
+          <option value="">Todos los deptos</option>
+        </select>
+      </div>
+      <div class="meta-row">
+        <span id="resultCount" aria-live="polite"><b>0</b> resultados</span>
+        <span class="active-filter-pill" id="activePill"></span>
+      </div>
+    </div>
+
+    <div id="results"></div>
+    <div id="loadMoreWrap" style="display:none;">
+      <button id="loadMoreBtn">Mostrar más resultados</button>
+    </div>
+  </div>
+</div>
+
+<footer>Directorio de Will &middot; Consulta rápida para uso interno</footer>
+
+<!-- MODAL: Agregar / Editar centro -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="modalTitle">Agregar centro</h2>
+      <button class="modal-close" id="modalCloseBtn" aria-label="Cerrar">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-error" id="formError"></div>
+      <form id="recordForm">
+        <fieldset>
+          <legend>Centro escolar</legend>
+          <div class="field-grid">
+            <div class="field">
+              <label for="f_codigo">Código CE *</label>
+              <input id="f_codigo" required autocomplete="off">
+            </div>
+            <div class="field">
+              <label for="f_cluster">Cluster</label>
+              <input id="f_cluster" autocomplete="off">
+            </div>
+            <div class="field span-2">
+              <label for="f_centro">Nombre del centro escolar *</label>
+              <input id="f_centro" required autocomplete="off">
+            </div>
+            <div class="field">
+              <label for="f_depto">Departamento</label>
+              <input id="f_depto" autocomplete="off">
+            </div>
+            <div class="field">
+              <label for="f_municipio">Municipio</label>
+              <input id="f_municipio" autocomplete="off">
+            </div>
+            <div class="field">
+              <label for="f_distrito">Distrito</label>
+              <input id="f_distrito" autocomplete="off">
+            </div>
+            <div class="field">
+              <label for="f_senal">¿Hay señal?</label>
+              <select id="f_senal">
+                <option value="">—</option>
+                <option value="SI">SI</option>
+                <option value="NO">NO</option>
+              </select>
+            </div>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Director</legend>
+          <div class="field-grid">
+            <div class="field span-2">
+              <label for="f_director">Nombre</label>
+              <input id="f_director" autocomplete="off">
+            </div>
+            <div class="field">
+              <label for="f_tel_director">Teléfono institucional</label>
+              <input id="f_tel_director" autocomplete="off">
+            </div>
+            <div class="field">
+              <label for="f_tel_director_personal">Teléfono personal</label>
+              <input id="f_tel_director_personal" autocomplete="off">
+            </div>
+            <div class="field">
+              <label for="f_dui_director">DUI</label>
+              <input id="f_dui_director" autocomplete="off">
+            </div>
+            <div class="field">
+              <label for="f_correo_director">Correo</label>
+              <input id="f_correo_director" type="email" autocomplete="off">
+            </div>
+            <div class="field">
+              <label for="f_estatus_director">Estatus dispositivo</label>
+              <select id="f_estatus_director">
+                <option value="">—</option>
+                <option value="OPERATIVO">OPERATIVO</option>
+                <option value="NO RECIBIÓ">NO RECIBIÓ</option>
+                <option value="DAÑADO">DAÑADO</option>
+                <option value="EXTRAVIADO">EXTRAVIADO</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="f_proveedor">Proveedor dispositivo</label>
+              <input id="f_proveedor" autocomplete="off">
+            </div>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Monitor de cluster</legend>
+          <div class="field-grid">
+            <div class="field span-2">
+              <label for="f_monitor">Nombre</label>
+              <input id="f_monitor" autocomplete="off">
+            </div>
+            <div class="field">
+              <label for="f_tel_monitor">Teléfono institucional</label>
+              <input id="f_tel_monitor" autocomplete="off">
+            </div>
+            <div class="field">
+              <label for="f_tel_monitor_personal">Teléfono personal</label>
+              <input id="f_tel_monitor_personal" autocomplete="off">
+            </div>
+            <div class="field">
+              <label for="f_dui_monitor">DUI</label>
+              <input id="f_dui_monitor" autocomplete="off">
+            </div>
+            <div class="field">
+              <label for="f_correo_monitor">Correo</label>
+              <input id="f_correo_monitor" type="email" autocomplete="off">
+            </div>
+            <div class="field">
+              <label for="f_estatus_monitor">Estatus dispositivo</label>
+              <select id="f_estatus_monitor">
+                <option value="">—</option>
+                <option value="OPERATIVO">OPERATIVO</option>
+                <option value="NO RECIBIÓ">NO RECIBIÓ</option>
+                <option value="DAÑADO">DAÑADO</option>
+                <option value="EXTRAVIADO">EXTRAVIADO</option>
+              </select>
+            </div>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Observación</legend>
+          <div class="field">
+            <textarea id="f_observacion"></textarea>
+          </div>
+        </fieldset>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-danger-text" id="deleteBtn" style="display:none;">Eliminar este centro</button>
+      <div style="margin-left:auto; display:flex; gap:10px;">
+        <button class="btn-secondary" id="cancelBtn">Cancelar</button>
+        <button class="btn-primary" id="saveBtn">Guardar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ⚠️ Pega aquí la URL de tu Apps Script (Implementar > Nueva implementación > Aplicación web)
+const API_URL = 'https://script.google.com/macros/s/AKfycbwtBJrUIneI_NMiPeZCBan2r3JtpaCbbEcGmqGGgTBTLBsr2e-3I7H63vCalRObAQppew/exec';
+</script>
+<script>
+(function(){
+  const PAGE_SIZE = 60;
+  let activeDept = "";
+  let activeScope = "todos";
+  let shown = PAGE_SIZE;
+  let RAW_ROWS = [];   // filas tal como vienen del Sheet (claves = encabezados en español)
+  let INDEXED = [];    // filas mapeadas a claves internas + índice de búsqueda
+  let editingCodigo = null; // si no es null, el modal está en modo "editar"
+
+  const HEADER_MAP = {
+    'Código CE':'codigo','Departamento':'depto','Municipio':'municipio','Distrito':'distrito','Cluster':'cluster',
+    'Centro Escolar':'centro','Director':'director','Teléfono Director (institucional)':'tel_director',
+    'Teléfono Director (personal)':'tel_director_personal','DUI Director':'dui_director','Correo Director':'correo_director',
+    'Estatus Dispositivo Director':'estatus_disp_director','Proveedor Dispositivo Director':'proveedor_director',
+    'Monitor de Cluster':'monitor','Teléfono Monitor (institucional)':'tel_monitor','Teléfono Monitor (personal)':'tel_monitor_personal',
+    'DUI Monitor':'dui_monitor','Correo Monitor':'correo_monitor','Estatus Dispositivo Monitor':'estatus_disp_monitor',
+    'Hay Señal CE':'hay_senal','Observación':'observacion'
+  };
+  const REVERSE_HEADER_MAP = Object.fromEntries(Object.entries(HEADER_MAP).map(([k,v])=>[v,k]));
+
+  function normalize(s){
+    return (s||"").toString().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+  }
+  function escapeHtml(s){
+    return s.toString().replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  }
+  function clean(v){ return (v===undefined||v===null) ? '' : String(v).trim(); }
+
+  // ---------------- Carga de datos ----------------
+  async function loadData(){
+    const loadingEl = document.getElementById('loadingState');
+    const errorEl = document.getElementById('errorState');
+    const contentEl = document.getElementById('appContent');
+    loadingEl.style.display = 'block';
+    errorEl.style.display = 'none';
+    contentEl.style.display = 'none';
+    try{
+      const res = await fetch(API_URL);
+      if(!res.ok) throw new Error('HTTP ' + res.status);
+      const json = await res.json();
+      if(json.status !== 'ok') throw new Error(json.message || 'Respuesta inesperada del servidor');
+      RAW_ROWS = json.rows || [];
+      rebuildIndex();
+      loadingEl.style.display = 'none';
+      contentEl.style.display = 'block';
+      buildStats();
+      render();
+    }catch(err){
+      loadingEl.style.display = 'none';
+      errorEl.style.display = 'block';
+      errorEl.innerHTML = `No se pudieron cargar los datos.<br><span style="font-family:monospace;font-size:12px;">${escapeHtml(err.message)}</span><br><br>
+        <button class="btn-secondary" onclick="location.reload()">Reintentar</button>`;
+    }
+  }
+
+  function rebuildIndex(){
+    INDEXED = RAW_ROWS.map(raw=>{
+      const r = { _raw: raw };
+      Object.entries(HEADER_MAP).forEach(([header, key])=>{ r[key] = clean(raw[header]); });
+      r._hayCommon = normalize([r.centro, r.codigo, r.municipio, r.distrito, r.cluster, r.depto].join(' | '));
+      r._hayDirector = normalize([r.director, r.correo_director].join(' | '));
+      r._hayMonitor = normalize([r.monitor, r.correo_monitor].join(' | '));
+      return r;
+    });
+  }
+
+  // ---------------- Estadísticas por departamento ----------------
+  const statsScroll = document.getElementById('statsScroll');
+  const deptSelect = document.getElementById('deptFilter');
+
+  function buildStats(){
+    statsScroll.innerHTML = '';
+    deptSelect.innerHTML = '<option value="">Todos los deptos</option>';
+
+    const byDept = {};
+    INDEXED.forEach(r=>{
+      if(!r.depto) return;
+      if(!byDept[r.depto]) byDept[r.depto] = { centros:0, monitores:new Set() };
+      byDept[r.depto].centros++;
+      if(r.monitor) byDept[r.depto].monitores.add(normalize(r.monitor));
+    });
+    const deptos = Object.keys(byDept).sort();
+
+    const allChip = document.createElement('div');
+    allChip.className = 'chip all active';
+    allChip.dataset.depto = "";
+    allChip.setAttribute('role','button'); allChip.setAttribute('tabindex','0');
+    const totalMonitores = new Set(INDEXED.filter(r=>r.monitor).map(r=>normalize(r.monitor))).size;
+    allChip.innerHTML = `<div class="chip-name">TODOS</div><div class="chip-nums"><b>${INDEXED.length}</b> centros &middot; <b>${totalMonitores}</b> mon</div>`;
+    allChip.addEventListener('click', ()=> setDept(""));
+    allChip.addEventListener('keydown', e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); setDept("");} });
+    statsScroll.appendChild(allChip);
+
+    deptos.forEach(d=>{
+      const info = byDept[d];
+      const chip = document.createElement('div');
+      chip.className = 'chip';
+      chip.dataset.depto = d;
+      chip.setAttribute('role','button'); chip.setAttribute('tabindex','0');
+      chip.innerHTML = `<div class="chip-name">${escapeHtml(d)}</div><div class="chip-nums"><b>${info.centros}</b> centros &middot; <b>${info.monitores.size}</b> mon</div>`;
+      chip.addEventListener('click', ()=> setDept(d));
+      chip.addEventListener('keydown', e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); setDept(d);} });
+      statsScroll.appendChild(chip);
+
+      const opt = document.createElement('option');
+      opt.value = d; opt.textContent = d;
+      deptSelect.appendChild(opt);
+    });
+  }
+
+  function setDept(depto){
+    activeDept = depto;
+    deptSelect.value = depto;
+    document.querySelectorAll('.chip').forEach(c=> c.classList.toggle('active', c.dataset.depto === depto));
+    updateActivePill();
+    shown = PAGE_SIZE;
+    render();
+  }
+  deptSelect.addEventListener('change', ()=> setDept(deptSelect.value));
+
+  function updateActivePill(){
+    const pill = document.getElementById('activePill');
+    if(activeDept){
+      pill.style.display = 'inline-flex';
+      pill.innerHTML = `${escapeHtml(activeDept)} <button aria-label="Quitar filtro">&times;</button>`;
+      pill.querySelector('button').addEventListener('click', ()=> setDept(""));
+    } else {
+      pill.style.display = 'none'; pill.innerHTML = '';
+    }
+  }
+
+  // ---------------- Buscador / scope ----------------
+  const scopeBtns = document.querySelectorAll('.scope-btn');
+  const searchInput = document.getElementById('search');
+  const placeholders = { todos:'Nombre, centro escolar, código...', director:'Nombre o correo del director...', monitor:'Nombre o correo del monitor...' };
+  scopeBtns.forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      activeScope = btn.dataset.scope;
+      scopeBtns.forEach(b=>{ b.classList.toggle('active', b===btn); b.setAttribute('aria-pressed', b===btn ? 'true':'false'); });
+      searchInput.placeholder = placeholders[activeScope] || placeholders.todos;
+      shown = PAGE_SIZE; render();
+    });
+  });
+
+  const clearBtn = document.getElementById('clearBtn');
+  let debounceTimer;
+  searchInput.addEventListener('input', ()=>{
+    clearBtn.style.display = searchInput.value ? 'inline-block' : 'none';
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(()=>{ shown = PAGE_SIZE; render(); }, 120);
+  });
+  clearBtn.addEventListener('click', ()=>{
+    searchInput.value=''; clearBtn.style.display='none'; shown = PAGE_SIZE; render(); searchInput.focus();
+  });
+
+  function hayForScope(r){
+    if(activeScope === 'director') return r._hayCommon + ' ' + r._hayDirector;
+    if(activeScope === 'monitor') return r._hayCommon + ' ' + r._hayMonitor;
+    return r._hayCommon + ' ' + r._hayDirector + ' ' + r._hayMonitor;
+  }
+
+  function getFiltered(){
+    const q = normalize(searchInput.value.trim());
+    let list = INDEXED;
+    if(activeDept) list = list.filter(r=>r.depto===activeDept);
+    if(q.length){
+      const terms = q.split(/\s+/).filter(Boolean);
+      list = list.filter(r=>{ const hay = hayForScope(r); return terms.every(t=> hay.includes(t)); });
+    }
+    return list;
+  }
+
+  // ---------------- Render de tarjetas ----------------
+  function borderClassFor(r){ return normalize(r.hay_senal) === 'no' ? 'cls-alerta' : ''; }
+
+  function estatusPill(estatus){
+    const e = normalize(estatus);
+    if(!e || e==='operativo') return '';
+    let cls = 'pill-warn';
+    if(e.includes('extraviado') || e.includes('danado')) cls = 'pill-danger';
+    return `<span class="status-pill ${cls}">${escapeHtml(estatus)}</span>`;
+  }
+
+  function formatPhone(t){
+    t = clean(t);
+    return t.length===8 ? t.slice(0,4)+'-'+t.slice(4) : t;
+  }
+
+  function personBlock(opts){
+    const {label, name, tel, telPersonal, dui, correo, estatus, extra} = opts;
+    const nameHtml = name ? `<div class="person-name">${escapeHtml(name)}</div>` : `<div class="person-name empty">Sin registrar</div>`;
+    const contacts = [];
+    if(tel) contacts.push(`<a href="tel:${tel}">${formatPhone(tel)}</a>`);
+    if(telPersonal && telPersonal !== tel) contacts.push(`<a href="tel:${telPersonal}">${formatPhone(telPersonal)} <span class="tag-tel">personal</span></a>`);
+    if(dui) contacts.push(`<span>DUI ${escapeHtml(dui)}</span>`);
+    const secondLine = [];
+    if(correo) secondLine.push(`<a href="mailto:${correo}">${escapeHtml(correo)}</a>`);
+    if(extra) secondLine.push(`<span>${escapeHtml(extra)}</span>`);
+    return `<div>
+      <div class="person-label">${label} ${estatusPill(estatus)}</div>
+      ${nameHtml}
+      ${contacts.length ? `<div class="contact-line">${contacts.join('')}</div>` : ''}
+      ${secondLine.length ? `<div class="contact-line contact-line-sub">${secondLine.join('')}</div>` : ''}
+    </div>`;
+  }
+
+  function cardHtml(r){
+    const senal = normalize(r.hay_senal);
+    const senalBadge = senal === 'no' ? `<div class="badge badge-alert">SIN SEÑAL</div>` : `<div class="badge">CLUSTER ${escapeHtml(r.cluster)}</div>`;
+    return `
+      <div class="card ${borderClassFor(r)}" data-codigo="${escapeHtml(r.codigo)}">
+        <div class="card-top">
+          <div>
+            <p class="centro-name">${escapeHtml(r.centro)}</p>
+            <div class="centro-loc">Código ${escapeHtml(r.codigo)} &middot; ${escapeHtml(r.municipio)}, ${escapeHtml(r.depto)}</div>
+          </div>
+          <div class="card-top-right">
+            ${senalBadge}
+            <button class="edit-btn" data-edit="${escapeHtml(r.codigo)}">Editar</button>
+          </div>
+        </div>
+        <div class="people">
+          ${personBlock({label:'Director', name:r.director, tel:r.tel_director, telPersonal:r.tel_director_personal, dui:r.dui_director, correo:r.correo_director, estatus:r.estatus_disp_director, extra:r.proveedor_director ? 'Dispositivo: '+r.proveedor_director : ''})}
+          <div class="divider-v">
+            ${personBlock({label:'Monitor de cluster', name:r.monitor, tel:r.tel_monitor, telPersonal:r.tel_monitor_personal, dui:r.dui_monitor, correo:r.correo_monitor, estatus:r.estatus_disp_monitor})}
+          </div>
+        </div>
+        ${r.observacion ? `<div class="observacion">⚠ ${escapeHtml(r.observacion)}</div>` : ''}
+      </div>`;
+  }
+
+  const resultsEl = document.getElementById('results');
+  const resultCountEl = document.getElementById('resultCount');
+  const loadMoreWrap = document.getElementById('loadMoreWrap');
+  const loadMoreBtn = document.getElementById('loadMoreBtn');
+  loadMoreBtn.addEventListener('click', ()=>{ shown += PAGE_SIZE; render(); });
+
+  function render(){
+    const filtered = getFiltered();
+    resultCountEl.innerHTML = `<b>${filtered.length.toLocaleString('es')}</b> resultado${filtered.length===1?'':'s'}`;
+
+    if(filtered.length === 0){
+      resultsEl.innerHTML = `<div class="empty-state">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        <p>No se encontró ningún centro, director o monitor con ese criterio.<br>Probá con otro nombre, código o departamento.</p>
+      </div>`;
+      loadMoreWrap.style.display = 'none';
+      return;
+    }
+    const slice = filtered.slice(0, shown);
+    resultsEl.innerHTML = slice.map(cardHtml).join('');
+    loadMoreWrap.style.display = filtered.length > shown ? 'block' : 'none';
+
+    resultsEl.querySelectorAll('[data-edit]').forEach(btn=>{
+      btn.addEventListener('click', ()=> openModal(btn.dataset.edit));
+    });
+  }
+
+  // ---------------- Modal: agregar / editar ----------------
+  const modalOverlay = document.getElementById('modalOverlay');
+  const modalTitle = document.getElementById('modalTitle');
+  const formError = document.getElementById('formError');
+  const deleteBtn = document.getElementById('deleteBtn');
+  const saveBtn = document.getElementById('saveBtn');
+
+  const FIELD_IDS = ['codigo','depto','municipio','distrito','cluster','centro','director',
+    'tel_director','tel_director_personal','dui_director','correo_director','estatus_disp_director','proveedor_director',
+    'monitor','tel_monitor','tel_monitor_personal','dui_monitor','correo_monitor','estatus_disp_monitor',
+    'hay_senal','observacion'];
+  const FIELD_ELEMENT_MAP = { hay_senal:'f_senal', estatus_disp_director:'f_estatus_director', estatus_disp_monitor:'f_estatus_monitor', proveedor_director:'f_proveedor' };
+
+  function fieldEl(key){
+    return document.getElementById(FIELD_ELEMENT_MAP[key] || ('f_' + key));
+  }
+
+  function openModal(codigo){
+    formError.style.display = 'none';
+    formError.textContent = '';
+    editingCodigo = codigo || null;
+
+    const record = codigo ? INDEXED.find(r=>r.codigo === codigo) : null;
+    modalTitle.textContent = record ? 'Editar centro' : 'Agregar centro';
+    deleteBtn.style.display = record ? 'inline-block' : 'none';
+
+    FIELD_IDS.forEach(key=>{
+      const el = fieldEl(key);
+      if(!el) return;
+      el.value = record ? (record[key] || '') : '';
+    });
+    fieldEl('codigo').disabled = !!record; // no se cambia el código de un registro existente
+
+    modalOverlay.classList.add('open');
+    setTimeout(()=> document.getElementById('f_centro').focus(), 50);
+  }
+
+  function closeModal(){
+    modalOverlay.classList.remove('open');
+    editingCodigo = null;
+  }
+
+  document.getElementById('addBtn').addEventListener('click', ()=> openModal(null));
+  document.getElementById('modalCloseBtn').addEventListener('click', closeModal);
+  document.getElementById('cancelBtn').addEventListener('click', closeModal);
+  modalOverlay.addEventListener('click', e=>{ if(e.target === modalOverlay) closeModal(); });
+  document.addEventListener('keydown', e=>{ if(e.key === 'Escape' && modalOverlay.classList.contains('open')) closeModal(); });
+
+  function buildRecordFromForm(){
+    const rec = {};
+    FIELD_IDS.forEach(key=>{
+      const el = fieldEl(key);
+      const value = el ? el.value.trim() : '';
+      rec[REVERSE_HEADER_MAP[key]] = value;
+    });
+    return rec;
+  }
+
+  function setSaving(isSaving){
+    saveBtn.disabled = isSaving;
+    saveBtn.textContent = isSaving ? 'Guardando…' : 'Guardar';
+  }
+
+  function showToast(msg, type){
+    const toast = document.getElementById('toast');
+    toast.textContent = msg;
+    toast.className = 'toast show ' + (type||'');
+    setTimeout(()=> toast.className = 'toast', 2600);
+  }
+
+  async function postToSheet(payload){
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // evita preflight CORS
+      body: JSON.stringify(payload)
+    });
+    const json = await res.json();
+    if(json.status !== 'ok') throw new Error(json.message || 'Error al guardar');
+    return json;
+  }
+
+  saveBtn.addEventListener('click', async ()=>{
+    formError.style.display = 'none';
+    const codigo = fieldEl('codigo').value.trim();
+    const centro = fieldEl('centro').value.trim();
+    if(!codigo || !centro){
+      formError.textContent = 'Código CE y Nombre del centro son obligatorios.';
+      formError.style.display = 'block';
+      return;
+    }
+    if(!editingCodigo && INDEXED.some(r=>r.codigo === codigo)){
+      formError.textContent = 'Ya existe un centro con ese Código CE. Usa "Editar" desde su tarjeta en vez de crear uno nuevo.';
+      formError.style.display = 'block';
+      return;
+    }
+
+    const record = buildRecordFromForm();
+    setSaving(true);
+    try{
+      await postToSheet({ action: 'upsert', record });
+      showToast(editingCodigo ? 'Centro actualizado' : 'Centro agregado', 'ok');
+      closeModal();
+      await loadData();
+    }catch(err){
+      formError.textContent = 'No se pudo guardar: ' + err.message;
+      formError.style.display = 'block';
+    }finally{
+      setSaving(false);
+    }
+  });
+
+  deleteBtn.addEventListener('click', async ()=>{
+    if(!editingCodigo) return;
+    if(!confirm('¿Eliminar este centro del directorio? Esta acción no se puede deshacer.')) return;
+    setSaving(true);
+    try{
+      await postToSheet({ action:'delete', codigo: editingCodigo });
+      showToast('Centro eliminado', 'ok');
+      closeModal();
+      await loadData();
+    }catch(err){
+      formError.textContent = 'No se pudo eliminar: ' + err.message;
+      formError.style.display = 'block';
+    }finally{
+      setSaving(false);
+    }
+  });
+
+  // ---------------- Arranque ----------------
+  updateActivePill();
+  loadData();
+})();
+
+</script>
+</body>
+</html>
